@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    container_name: voucher-pool-app
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+    networks:
+      - app-network
+    depends_on:
+      - database
+      - valkey
+
+  valkey:
+    image: valkey/valkey:9
+    container_name: valkey_server
+    ports:
+      - '6389:6379'
+    volumes:
+      - voucher-pool-redis-data:/data
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - app-network
+
+  database:
+    image: postgres:17.2
+    container_name: voucher-pool-db
+    ports:
+      - '5435:5436'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: voucher_pool_development
+    volumes:
+      - voucher-pool-postgres-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+volumes:
+  voucher-pool-redis-data:
+  voucher-pool-postgres-data:
+networks:
+  app-network: {}
