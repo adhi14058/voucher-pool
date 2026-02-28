@@ -1,14 +1,17 @@
 services:
   app:
     build:
-      context: ../
+      context: .
       dockerfile: Dockerfile
     container_name: voucher-pool-app
     ports:
       - '3000:3000'
     environment:
+      - CONFIG_ENVIRONMENT=development
       - NODE_ENV=development
       - PORT=3000
+      - DATABASE_URL=postgres://postgres:postgres@database:5432/voucher_pool_development
+      - VALKEY_URL=redis://valkey:6379
     networks:
       - app-network
     depends_on:
@@ -31,7 +34,7 @@ services:
     image: postgres:17.2
     container_name: voucher-pool-db
     ports:
-      - '5435:5436'
+      - '5435:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
