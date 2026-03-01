@@ -13,3 +13,48 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  voucherCodes VoucherCode[]
+
+  @@map("customers")
+}
+
+model SpecialOffer {
+  id                 String   @id @default(uuid())
+  name               String
+  discountPercentage Float    @map("discount_percentage")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  voucherCodes VoucherCode[]
+
+  @@map("special_offers")
+}
+
+model VoucherCode {
+  id             String    @id @default(uuid())
+  code           String    @unique
+  expirationDate DateTime  @map("expiration_date")
+  usedAt         DateTime? @map("used_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  customerId String   @map("customer_id")
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  specialOfferId String       @map("special_offer_id")
+  specialOffer   SpecialOffer @relation(fields: [specialOfferId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, specialOfferId])
+  @@index([code])
+  @@index([customerId])
+  @@index([specialOfferId])
+  @@map("voucher_codes")
+}

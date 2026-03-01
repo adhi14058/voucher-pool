@@ -2,26 +2,27 @@ import { Injectable, OnModuleDestroy } from '@nestjs/common';
 
 @Injectable()
 export class HealthService implements OnModuleDestroy {
-  private isReady = true;
-  private isAlive = true;
+  private isReady: boolean;
+  private isAlive: boolean;
 
   get readiness(): boolean {
-    return this.isReady;
+    return this.isReady ?? false;
   }
-
-  set readiness(isReady: boolean) {
-    this.isReady = isReady;
-  }
-
   get liveness(): boolean {
-    return this.isAlive;
+    return this.isAlive ?? false;
   }
 
-  onModuleDestroy() {
+  onApplicationBootstrap() {
+    this.isReady = true;
+    this.isAlive = true;
+  }
+
+  async onModuleDestroy() {
     this.isReady = false; // Set readiness to false when the module is destroyed
+    await new Promise((r) => process.nextTick(r));
   }
 
-  markAsNotAlive() {
+  onApplicationShutdown() {
     this.isAlive = false; // Set liveness to false (e.g., when a critical error occurs)
   }
 }

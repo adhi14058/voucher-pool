@@ -7,4 +7,4 @@ echo "Starting with CONFIG_ENVIRONMENT=${CONFIG_ENVIRONMENT:-unknown}"
 npm run prisma:migrate-prod
 
 # start the server
-npm run start:prod
+npm run start:dev

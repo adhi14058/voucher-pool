@@ -13,6 +13,7 @@ import { getEnvironment } from './config.utils.js';
 export function getEnvFilePaths(): string[] {
   const environment = getEnvironment();
   const rootDir = process.cwd();
+  console.log('rootDir', rootDir);
 
   return [
     path.join(rootDir, '.env'),

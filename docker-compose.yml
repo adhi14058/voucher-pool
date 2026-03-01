@@ -5,34 +5,22 @@ services:
       dockerfile: Dockerfile
     container_name: voucher-pool-app
     ports:
-      - '3000:3000'
-    environment:
-      - CONFIG_ENVIRONMENT=development
-      - NODE_ENV=development
-      - PORT=3000
-      - DATABASE_URL=postgres://postgres:postgres@database:5432/voucher_pool_development
-      - VALKEY_URL=redis://valkey:6379
+      - '${PORT}:${PORT}'
+    env_file:
+      - env/.env.development
+      - .env
+    volumes:
+      - .:/app
+    # overwrite the cmd in the Dockerfile
+    command: ['bash', '/app/scripts/docker-entrypoint-dev.sh']
     networks:
       - app-network
     depends_on:
       - database
-      - valkey
-
-  valkey:
-    image: valkey/valkey:9
-    container_name: valkey_server
-    ports:
-      - '6389:6379'
-    volumes:
-      - voucher-pool-redis-data:/data
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-    networks:
-      - app-network
 
   database:
     image: postgres:17.2
-    container_name: voucher-pool-db
+    container_name: voucher-pool-database
     ports:
       - '5435:5432'
     environment:
@@ -45,7 +33,6 @@ services:
       - app-network
 
 volumes:
-  voucher-pool-redis-data:
   voucher-pool-postgres-data:
 networks:
   app-network: {}
