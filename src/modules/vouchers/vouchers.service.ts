@@ -107,6 +107,7 @@ export class VouchersService {
 
   async redeem(dto: RedeemVoucherDto): Promise<RedeemVoucherResponseDto> {
     return this.prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT * FROM voucher_codes WHERE code = ${dto.code} FOR UPDATE`;
       const voucher = await tx.voucherCode.findUnique({
         where: { code: dto.code },
         include: {
