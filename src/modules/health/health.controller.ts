@@ -3,7 +3,7 @@ import { ApiExcludeController } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
 import { HealthService } from './health.service';
 
-@Controller('')
+@Controller()
 @ApiExcludeController()
 @SkipThrottle()
 export class HealthController {

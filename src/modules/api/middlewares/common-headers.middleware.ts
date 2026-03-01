@@ -12,7 +12,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
-export class AttachCommonResponseHeadersMiddleware implements NestMiddleware {
+export class CommonResponseHeadersMiddleware implements NestMiddleware {
   private readonly versionNumber: string;
   private readonly containerHash: string;
 

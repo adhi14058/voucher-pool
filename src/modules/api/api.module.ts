@@ -5,7 +5,7 @@ import { SpecialOffersModule } from '../special-offers/special-offers.module';
 import { VouchersModule } from '../vouchers/vouchers.module';
 import { RouterModule } from '@nestjs/core';
 import { API_ROUTES } from './api.routes';
-import { AttachCommonResponseHeadersMiddleware } from './middlewares/common-headers.middleware';
+import { CommonResponseHeadersMiddleware } from './middlewares/common-headers.middleware';
 
 @Module({
   imports: [
@@ -18,6 +18,6 @@ import { AttachCommonResponseHeadersMiddleware } from './middlewares/common-head
 })
 export class ApiModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AttachCommonResponseHeadersMiddleware).forRoutes('*');
+    consumer.apply(CommonResponseHeadersMiddleware).forRoutes('*');
   }
 }

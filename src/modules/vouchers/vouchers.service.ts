@@ -15,10 +15,6 @@ import {
 } from './dto/voucher-response.dto';
 import { AppLogger } from '../../core/logging/app-logger';
 
-const CODE_CHARS =
-  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-const CODE_CHARS_LEN = CODE_CHARS.length;
-const MAX_BYTE_VALUE = Math.floor(256 / CODE_CHARS_LEN) * CODE_CHARS_LEN;
 const MAX_CODE_ATTEMPTS = 10;
 
 @Injectable()
@@ -27,17 +23,9 @@ export class VouchersService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  generateCode(length = 8): string {
-    let code = '';
-    while (code.length < length) {
-      const bytes = randomBytes(length - code.length);
-      for (let i = 0; i < bytes.length && code.length < length; i++) {
-        if (bytes[i] < MAX_BYTE_VALUE) {
-          code += CODE_CHARS[bytes[i] % CODE_CHARS_LEN];
-        }
-      }
-    }
-    return code;
+  generateCode(length = 10): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    return Array.from(randomBytes(length), (b) => chars[b % chars.length]).join(''); //prettier-ignore
   }
 
   async generate(dto: GenerateVoucherDto): Promise<VoucherResponseDto[]> {
