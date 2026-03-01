@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { Logger } from '@nestjs/common';
 
 import * as httpContext from 'express-http-context';
 import express from 'express';
@@ -9,9 +8,10 @@ import { AppModule } from './modules/app.module.js';
 import { AppConfigService } from './modules/config/config.service.js';
 import { setupSwagger } from './swagger.js';
 import { isDevEnv } from './modules/config/config.utils.js';
+import { AppLogger } from './core/logging/app-logger.js';
 
-const logger = new Logger('Main');
 async function bootstrap(): Promise<void> {
+  const logger = new AppLogger('bootstrap');
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.use(httpContext.middleware);
