@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ex
+set -e
 
 echo "Starting with CONFIG_ENVIRONMENT=${CONFIG_ENVIRONMENT:-unknown}"
 

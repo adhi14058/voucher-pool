@@ -1,11 +1,18 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnApplicationShutdown,
+} from '@nestjs/common';
 import { Prisma, PrismaClient } from '../../../prisma/db-client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { AppConfigService } from '../config/config.service';
-import { AppLogger } from '../../core/logging/app-logger.js';
+import { AppLogger } from '../../core/logging/app-logger';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnApplicationShutdown
+{
   private readonly logger = new AppLogger(PrismaService.name);
   constructor(readonly configService: AppConfigService) {
     const databaseUrl = configService.get('DATABASE_URL', { infer: true });

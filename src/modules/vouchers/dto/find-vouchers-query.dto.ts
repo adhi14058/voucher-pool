@@ -1,13 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty } from 'class-validator';
 
-export class RedeemVoucherDto {
-  @ApiProperty({ example: 'ABCD1234' })
-  @IsString()
-  @IsNotEmpty()
-  code: string;
-
+export class FindVouchersByEmailQuery {
   @ApiProperty({ example: 'john@example.com' })
   @IsEmail()
   @IsNotEmpty()

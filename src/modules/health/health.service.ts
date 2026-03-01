@@ -1,15 +1,23 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  OnApplicationBootstrap,
+  OnApplicationShutdown,
+  OnModuleDestroy,
+} from '@nestjs/common';
 
 @Injectable()
-export class HealthService implements OnModuleDestroy {
-  private isReady: boolean;
-  private isAlive: boolean;
+export class HealthService
+  implements OnApplicationBootstrap, OnModuleDestroy, OnApplicationShutdown
+{
+  private isReady = false;
+  private isAlive = false;
 
   get readiness(): boolean {
-    return this.isReady ?? false;
+    return this.isReady;
   }
+
   get liveness(): boolean {
-    return this.isAlive ?? false;
+    return this.isAlive;
   }
 
   onApplicationBootstrap() {
@@ -18,11 +26,11 @@ export class HealthService implements OnModuleDestroy {
   }
 
   async onModuleDestroy() {
-    this.isReady = false; // Set readiness to false when the module is destroyed
+    this.isReady = false;
     await new Promise((r) => process.nextTick(r));
   }
 
   onApplicationShutdown() {
-    this.isAlive = false; // Set liveness to false (e.g., when a critical error occurs)
+    this.isAlive = false;
   }
 }

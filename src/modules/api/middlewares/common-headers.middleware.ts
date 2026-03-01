@@ -14,20 +14,19 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class AttachCommonResponseHeadersMiddleware implements NestMiddleware {
   private readonly versionNumber: string;
+  private readonly containerHash: string;
 
   constructor(private readonly configService: AppConfigService) {
-    this.versionNumber = this.configService.get('APP_VERSION', {
-      infer: true,
-    })!;
+    this.versionNumber = this.configService.get('APP_VERSION', { infer: true }) ?? 'unknown'; //prettier-ignore
+    this.containerHash = os.hostname();
   }
 
-  use(_req: Request, res: Response, next: NextFunction): void {
-    const containerHash = os.hostname().split('-').pop();
-    const requestId = uuidv4();
+  use(req: Request, res: Response, next: NextFunction): void {
+    const requestId = req.headers['x-request-id'] ?? uuidv4();
     httpContext.set(API_HEADER_REQUEST_ID, requestId);
 
     res.setHeader(API_HEADER_VERSION, this.versionNumber);
-    res.setHeader(API_HEADER_CONTAINER_ID, containerHash ?? 'N/A');
+    res.setHeader(API_HEADER_CONTAINER_ID, this.containerHash);
     res.setHeader(API_HEADER_REQUEST_ID, requestId);
     next();
   }

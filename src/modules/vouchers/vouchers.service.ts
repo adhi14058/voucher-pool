@@ -13,20 +13,29 @@ import {
   ValidVoucherResponseDto,
   VoucherResponseDto,
 } from './dto/voucher-response.dto';
+import { AppLogger } from '../../core/logging/app-logger';
 
 const CODE_CHARS =
   'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const CODE_CHARS_LEN = CODE_CHARS.length;
+const MAX_BYTE_VALUE = Math.floor(256 / CODE_CHARS_LEN) * CODE_CHARS_LEN;
 const MAX_CODE_ATTEMPTS = 10;
 
 @Injectable()
 export class VouchersService {
+  private readonly logger = new AppLogger(VouchersService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   generateCode(length = 8): string {
-    const bytes = randomBytes(length);
     let code = '';
-    for (let i = 0; i < length; i++) {
-      code += CODE_CHARS[bytes[i] % CODE_CHARS.length];
+    while (code.length < length) {
+      const bytes = randomBytes(length - code.length);
+      for (let i = 0; i < bytes.length && code.length < length; i++) {
+        if (bytes[i] < MAX_BYTE_VALUE) {
+          code += CODE_CHARS[bytes[i] % CODE_CHARS_LEN];
+        }
+      }
     }
     return code;
   }
@@ -47,14 +56,14 @@ export class VouchersService {
       throw new BadRequestException('Expiration date must be in the future');
     }
 
-    const customers = await this.prisma.customer.findMany();
-    if (customers.length === 0) {
-      throw new BadRequestException(
-        'No customers found to generate vouchers for',
-      );
-    }
-
     return this.prisma.$transaction(async (tx) => {
+      const customers = await tx.customer.findMany();
+      if (customers.length === 0) {
+        throw new BadRequestException(
+          'No customers found to generate vouchers for',
+        );
+      }
+
       const created: VoucherResponseDto[] = [];
 
       for (const customer of customers) {
@@ -84,6 +93,9 @@ export class VouchersService {
         }
 
         if (!code) {
+          this.logger.error(
+            `Failed to generate unique voucher code after ${String(MAX_CODE_ATTEMPTS)} attempts for customer ${customer.id}`,
+          );
           throw new InternalServerErrorException(
             'Failed to generate unique voucher code',
           );
@@ -119,7 +131,7 @@ export class VouchersService {
         throw new NotFoundException('Voucher code not found');
       }
 
-      if (voucher.customer.email !== dto.email) {
+      if (voucher.customer.email.toLowerCase() !== dto.email.toLowerCase()) {
         throw new BadRequestException(
           'Voucher code does not belong to this email',
         );
@@ -133,10 +145,15 @@ export class VouchersService {
         throw new BadRequestException('Voucher code has expired');
       }
 
-      await tx.voucherCode.update({
-        where: { id: voucher.id },
+      // Atomic conditional update to prevent race conditions
+      const updated = await tx.voucherCode.updateMany({
+        where: { id: voucher.id, usedAt: null },
         data: { usedAt: new Date() },
       });
+
+      if (updated.count === 0) {
+        throw new BadRequestException('Voucher code has already been used');
+      }
 
       return { discountPercentage: voucher.specialOffer.discountPercentage };
     });
@@ -144,7 +161,7 @@ export class VouchersService {
 
   async findValidByEmail(email: string): Promise<ValidVoucherResponseDto[]> {
     const customer = await this.prisma.customer.findUnique({
-      where: { email },
+      where: { email: email.toLowerCase() },
     });
 
     if (!customer) {

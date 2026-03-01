@@ -2,9 +2,8 @@ import { Global, Module, ValidationPipe } from '@nestjs/common';
 import { DatabaseModule } from './database/database.module';
 import { AppConfigModule } from './config/config.module';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { CustomExceptionFilter } from '../core/exception-filters/custom-exception.filter';
-import { APP_FILTER } from '@nestjs/core';
 import { LoggingInterceptor } from '../core/interceptors/logging.interceptor';
 
 @Global()
@@ -26,6 +25,7 @@ import { LoggingInterceptor } from '../core/interceptors/logging.interceptor';
         whitelist: true,
         forbidNonWhitelisted: true,
         transform: true,
+        stopAtFirstError: true,
       }),
     },
     {

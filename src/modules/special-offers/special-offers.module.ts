@@ -5,5 +5,6 @@ import { SpecialOffersService } from './special-offers.service';
 @Module({
   controllers: [SpecialOffersController],
   providers: [SpecialOffersService],
+  exports: [SpecialOffersService],
 })
 export class SpecialOffersModule {}

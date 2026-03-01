@@ -20,6 +20,7 @@ describe('VouchersService', () => {
       findMany: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn(),
     },
     $transaction: jest.fn((fn) => fn(mockPrisma)),
   };
@@ -224,7 +225,7 @@ describe('VouchersService', () => {
         customer: { email: 'john@example.com' },
         specialOffer: { discountPercentage: 25 },
       });
-      mockPrisma.voucherCode.update.mockResolvedValue({});
+      mockPrisma.voucherCode.updateMany.mockResolvedValue({ count: 1 });
 
       const result = await service.redeem({
         code: 'ABCD1234',
@@ -232,10 +233,45 @@ describe('VouchersService', () => {
       });
 
       expect(result).toEqual({ discountPercentage: 25 });
-      expect(mockPrisma.voucherCode.update).toHaveBeenCalledWith({
-        where: { id: 'voucher-1' },
+      expect(mockPrisma.voucherCode.updateMany).toHaveBeenCalledWith({
+        where: { id: 'voucher-1', usedAt: null },
         data: { usedAt: expect.any(Date) },
       });
+    });
+
+    it('should throw BadRequestException when atomic update finds voucher already redeemed', async () => {
+      mockPrisma.voucherCode.findUnique.mockResolvedValue({
+        id: 'voucher-1',
+        code: 'ABCD1234',
+        usedAt: null,
+        expirationDate: new Date(Date.now() + 86400000),
+        customer: { email: 'john@example.com' },
+        specialOffer: { discountPercentage: 25 },
+      });
+      mockPrisma.voucherCode.updateMany.mockResolvedValue({ count: 0 });
+
+      await expect(
+        service.redeem({ code: 'ABCD1234', email: 'john@example.com' }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should compare emails case-insensitively', async () => {
+      mockPrisma.voucherCode.findUnique.mockResolvedValue({
+        id: 'voucher-1',
+        code: 'ABCD1234',
+        usedAt: null,
+        expirationDate: new Date(Date.now() + 86400000),
+        customer: { email: 'John@Example.com' },
+        specialOffer: { discountPercentage: 25 },
+      });
+      mockPrisma.voucherCode.updateMany.mockResolvedValue({ count: 1 });
+
+      const result = await service.redeem({
+        code: 'ABCD1234',
+        email: 'john@example.com',
+      });
+
+      expect(result).toEqual({ discountPercentage: 25 });
     });
   });
 

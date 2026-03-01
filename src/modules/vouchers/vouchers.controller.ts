@@ -1,8 +1,9 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { VouchersService } from './vouchers.service';
 import { GenerateVoucherDto } from './dto/generate-voucher.dto';
 import { RedeemVoucherDto } from './dto/redeem-voucher.dto';
+import { FindVouchersByEmailQuery } from './dto/find-vouchers-query.dto';
 import {
   RedeemVoucherResponseDto,
   ValidVoucherResponseDto,
@@ -41,12 +42,11 @@ export class VouchersController {
   @ApiOperation({
     summary: 'Get all valid voucher codes for a given email',
   })
-  @ApiQuery({ name: 'email', required: true, type: String })
   @ApiResponse({ status: 200, type: [ValidVoucherResponseDto] })
   @ApiResponse({ status: 404, description: 'Customer not found' })
   findValidByEmail(
-    @Query('email') email: string,
+    @Query() query: FindVouchersByEmailQuery,
   ): Promise<ValidVoucherResponseDto[]> {
-    return this.vouchersService.findValidByEmail(email);
+    return this.vouchersService.findValidByEmail(query.email);
   }
 }

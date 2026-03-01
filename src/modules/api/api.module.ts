@@ -4,7 +4,7 @@ import { CustomersModule } from '../customers/customers.module';
 import { SpecialOffersModule } from '../special-offers/special-offers.module';
 import { VouchersModule } from '../vouchers/vouchers.module';
 import { RouterModule } from '@nestjs/core';
-import { getApiRoutes } from './api.routes';
+import { API_ROUTES } from './api.routes';
 import { AttachCommonResponseHeadersMiddleware } from './middlewares/common-headers.middleware';
 
 @Module({
@@ -13,12 +13,8 @@ import { AttachCommonResponseHeadersMiddleware } from './middlewares/common-head
     CustomersModule,
     SpecialOffersModule,
     VouchersModule,
-
-    //router
-    RouterModule.register(getApiRoutes()),
+    RouterModule.register(API_ROUTES),
   ],
-  controllers: [],
-  providers: [],
 })
 export class ApiModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

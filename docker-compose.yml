@@ -16,7 +16,8 @@ services:
     networks:
       - app-network
     depends_on:
-      - database
+      database:
+        condition: service_healthy
 
   database:
     image: postgres:17.2
@@ -31,6 +32,11 @@ services:
       - voucher-pool-postgres-data:/var/lib/postgresql/data
     networks:
       - app-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d voucher_pool_development']
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   voucher-pool-postgres-data:
